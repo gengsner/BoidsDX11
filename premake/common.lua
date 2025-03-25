@@ -1,0 +1,13 @@
+outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+dirs = {}
+dirs["root"] 			= os.realpath("../")
+dirs["bin"]	            = os.realpath(dirs.root .. "bin/")
+dirs["dependencies"]	= os.realpath(dirs.root .. "dependencies/")
+dirs["localfiles"]	    = os.realpath(dirs.root .. "local/")
+dirs["temp"]	        = os.realpath(dirs.root .. "temp/")
+dirs["source"] 			= os.realpath(dirs.root .. "source/")
+dirs["game"]			= os.realpath(dirs.root .. "source/game/")
+dirs["engine"]			= os.realpath(dirs.root .. "source/engine/")
+dirs["external"]		= os.realpath(dirs.root .. "source/external/")  
+dirs["pix"]		        = os.realpath(dirs.root .. "source/external/pix/")  
+dirs["imgui"]		    = os.realpath(dirs.root .. "source/external/imgui/")  
