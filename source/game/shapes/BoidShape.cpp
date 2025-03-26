@@ -24,12 +24,16 @@ bool BoidShape::Initialize(ID3D11Device* device, const CommonUtilities::Matrix4x
 	Vector3<float> faceNorm1 = (p0 - p2).Cross(p0 - p3).GetNormalized();
 	Vector3<float> faceNorm2 = (p0 - p3).Cross(p0 - p1).GetNormalized();
 	Vector3<float> faceNorm3 = (p1 - p3).Cross(p1 - p2).GetNormalized();
+	faceNorm0;
+	faceNorm1;
+	faceNorm2;
+	faceNorm3;
 
 	Vertex vertices[VERTICES] = {
-	{ p0, faceNorm0 }, { p1, faceNorm0 }, { p2, faceNorm0 },
-	{ p0, faceNorm1 }, { p2, faceNorm1 }, { p3, faceNorm1 },
-	{ p0, faceNorm2 }, { p3, faceNorm2 }, { p1, faceNorm2 },
-	{ p1, faceNorm3 }, { p3, faceNorm3 }, { p2, faceNorm3 }
+	{ p0, faceNorm0 }, { p2, faceNorm0 }, { p1, faceNorm0 },
+	{ p0, faceNorm1 }, { p3, faceNorm1 }, { p2, faceNorm1 },
+	{ p0, faceNorm2 }, { p1, faceNorm2 }, { p3, faceNorm2 },
+	{ p1, faceNorm3 }, { p2, faceNorm3 }, { p3, faceNorm3 }
 	};
 
 	{
@@ -50,7 +54,7 @@ bool BoidShape::Initialize(ID3D11Device* device, const CommonUtilities::Matrix4x
 	std::string vsData;
 	{
 		std::ifstream vsFile;
-		if(aInstancedFlag)
+		if (aInstancedFlag)
 			vsFile.open("../dependencies/BoidInstance_VS.cso", std::ios::binary);
 		else
 			vsFile.open("../dependencies/Player_VS.cso", std::ios::binary);

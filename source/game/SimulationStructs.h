@@ -1,5 +1,5 @@
 #pragma once
-#include "graphics/Model.h"
+#include "Mesh.h"
 #include "commonUtilities/Quaternion.h"
 #include "commonUtilities/Matrix4x4.h"
 
@@ -7,7 +7,7 @@ using namespace CommonUtilities;
 
 struct Player
 {
-	Model model;
+	Mesh mesh;
 	Matrix4x4<float> transform;
 	Quaternion<float> quaternion;
 	float velocity = 0.f;

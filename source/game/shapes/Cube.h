@@ -1,5 +1,5 @@
 #pragma once
-#include "graphics/Mesh.h"
+#include "Mesh.h"
 
 class Cube : public Mesh
 {

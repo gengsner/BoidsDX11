@@ -9,8 +9,8 @@ PixelInputType main(VertexInputType input)
         
     float3 forward = normalize(b.vel);
     float3 up = float3(0, 1, 0);
-    float3 right = normalize(cross(up, forward));
-    up = cross(forward, right);
+    float3 right = normalize(cross(forward, up));
+    up = cross(right, forward);
     
     float4x4 instanceModelToWorld =
     {

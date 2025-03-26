@@ -33,20 +33,20 @@ bool BoidSimulation::Init(GraphicsEngine* aGraphicsEngine, Camera* aCamera)
 	{
 		return false;
 	}
-	myBoidModel.mesh = boidShape;
+	myBoidMesh = boidShape;
 
 	if (!boidShape.Initialize(myGraphicsEngine->GetDevice(), transform, false))
 	{
 		return false;
 	}
-	myPlayer.model.mesh = boidShape;
+	myPlayer.mesh = boidShape;
 
 	Cube cubeShape;
 	if (!cubeShape.Initialize(myGraphicsEngine->GetDevice(), transform))
 	{
 		return false;
 	}
-	myCubeModel.mesh = cubeShape;
+	myCubeMesh = cubeShape;
 
 	return true;
 }
@@ -100,12 +100,12 @@ const SimulationMessage BoidSimulation::UpdateSimulationSettings()
 	SimulationMessage returnMsg = SimulationMessage::None;
 	ImGui::Text("FPS"); ImGui::SameLine(IMGUI_SPACING);
 	ImGui::TextColored(ImVec4(1, 1, 0, 1), std::to_string(myLastFPS).c_str());
-	
+
 	ImGui::Text("Simulation"); ImGui::SameLine(IMGUI_SPACING);
 	if (myDeltaTime == 0)
 		ImGui::TextColored(ImVec4(1, 0, 0, 1), "Halted: delta time is '0'");
 	else if (myAutoHaltFlag)
-		ImGui::TextColored(ImVec4(1, 0, 0, 1), "Halted: invalid settings");	
+		ImGui::TextColored(ImVec4(1, 0, 0, 1), "Halted: invalid settings");
 	else if (myFPSHaltFlag)
 	{
 		ImGui::TextColored(ImVec4(1, 0, 0, 1), "Halted: low fps. Try changing settings and restart simulation.");
@@ -117,11 +117,16 @@ const SimulationMessage BoidSimulation::UpdateSimulationSettings()
 		returnMsg = SimulationMessage::Reset;
 
 	ImGui::Text("BoidCount Count"); ImGui::SameLine(IMGUI_SPACING);
-	ImGui::TextColored(ImVec4(1, 1, 0, 1), std::to_string(mySimSettings.boidCount).c_str());
+	ImVec4 boidTextColor = mySimSettings.boidCount > MAX_BOIDS ?
+		ImVec4(1, 0, 0, 1) :
+		ImVec4(0, 1, 0, 1);
+	ImGui::TextColored(boidTextColor, std::to_string(mySimSettings.boidCount).c_str());
 
 	auto color = mySimSettings.griddingOn ?
-		ImVec4(0, 1, 0, 1) :
-		ImVec4(1, 0, 0, 1);
+		(myCellCount == 0 || myCellCount > MAX_CELLS) ?
+			ImVec4(1, 0, 0, 1) :
+			ImVec4(0, 1, 0, 1) :
+		ImVec4(1, 1, 0, 1);
 	ImGui::Text("Cell Count"); ImGui::SameLine(IMGUI_SPACING);
 	ImGui::TextColored(color, std::to_string(myCellCount).c_str());
 
@@ -275,10 +280,10 @@ void BoidSimulation::UpdatePlayer(InputHandler& aInputHandler)
 
 	myPlayer.quaternion *= q;
 	myPlayer.transform.SetRotation(myPlayer.quaternion.GetRotationMatrix4x4());
-		
+
 	myPlayer.velocity += input.y * myPlayerSettings.acceleration * myDeltaTime;
 	myPlayer.velocity = Clamp<float>(myPlayer.velocity, 0, myPlayerSettings.maxVelocity);
-	myPlayer.transform.SetTranslation(myPlayer.transform.GetTranslation() + myPlayer.transform.GetZ() * myPlayer.velocity * myDeltaTime);		
+	myPlayer.transform.SetTranslation(myPlayer.transform.GetTranslation() + myPlayer.transform.GetZ() * myPlayer.velocity * myDeltaTime);
 }
 
 void BoidSimulation::ApplySettings(const GraphicsSettings& aGraphicsSettings, const SimulationSettings& aBoidSettings, const PlayerSettings& aPlayerSettings)
@@ -291,7 +296,7 @@ void BoidSimulation::ApplySettings(const GraphicsSettings& aGraphicsSettings, co
 const Matrix4x4<float> BoidSimulation::GetPlayerFollowCameraTransform()
 {
 	myFollowCamera.quaternion.SLerp(myPlayer.quaternion, 0.08f);
-	myFollowCamera.transform.SetRotation(myFollowCamera.quaternion.GetRotationMatrix4x4());	
+	myFollowCamera.transform.SetRotation(myFollowCamera.quaternion.GetRotationMatrix4x4());
 
 	myFollowCamera.velocity = Lerp<float>(myFollowCamera.velocity, myPlayer.velocity, 0.08f);
 
@@ -377,7 +382,7 @@ void BoidSimulation::UpdateFrameBuffer()
 
 	if (!myAutoHaltFlag)
 	{
-		myCubeModel.mesh.SetTransform({
+		myCubeMesh.SetTransform({
 			cubeSize.x, 0, 0, 0,
 			0, cubeSize.y, 0, 0,
 			0, 0, cubeSize.z, 0,
@@ -405,16 +410,16 @@ void BoidSimulation::SimulateGPU()
 void BoidSimulation::Render()
 {
 	if (myGraphicsSettings.renderBounds)
-		myGraphicsEngine->RenderNoDepth(&myCubeModel);
+		myGraphicsEngine->RenderNoDepth(&myCubeMesh);
 
 	if (myPlayer.active)
 	{
-		myPlayer.model.mesh.SetTransform(myPlayer.transform);
-		myGraphicsEngine->Render(&myPlayer.model);
+		myPlayer.mesh.SetTransform(myPlayer.transform);
+		myGraphicsEngine->Render(&myPlayer.mesh);
 	}
 
 	myBoidComputer.BindStructuredBuffer();
-	myGraphicsEngine->RenderBoids(&myBoidModel, min(MAX_BOIDS, (UINT)mySimSettings.boidCount));
+	myGraphicsEngine->RenderBoids(&myBoidMesh, min(MAX_BOIDS, (UINT)mySimSettings.boidCount));
 	myBoidComputer.UnbindStructuredBuffer();
 }
 

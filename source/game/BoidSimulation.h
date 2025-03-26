@@ -48,8 +48,8 @@ public:
 	const PlayerSettings& GetPlayerSettings() const;
 
 private:
-	Model myBoidModel;
-	Model myCubeModel;
+	Mesh myBoidMesh;
+	Mesh myCubeMesh;
 	SimulationSettings mySimSettings;
 	GraphicsSettings myGraphicsSettings;
 	PlayerSettings myPlayerSettings;

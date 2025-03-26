@@ -1,7 +1,6 @@
 #include "GraphicsEngine.h"
-#include "graphics/Model.h"
+#include "Mesh.h"
 #include "Camera.h"
-#include "graphics/DDSTextureLoader11.h"
 
 #define REPORT_DX_WARNINGS
 
@@ -9,9 +8,6 @@ GraphicsEngine::GraphicsEngine() = default;
 GraphicsEngine::~GraphicsEngine()
 {}
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "graphics/stb_image.h"
-#include <vector>
 
 bool GraphicsEngine::Init(HWND windowHandle, const bool aFullscreenFlag)
 {
@@ -177,7 +173,7 @@ void GraphicsEngine::PrepareFrame(const Vector3<float>& aClearColor)
 	);
 }
 
-void GraphicsEngine::Render(Model* aModel)
+void GraphicsEngine::Render(Mesh* aMesh)
 {
 	myContext->OMSetRenderTargets(
 		1,
@@ -185,15 +181,15 @@ void GraphicsEngine::Render(Model* aModel)
 		myDepthBuffer.Get()
 	);
 	ObjectBufferData objectBufferData = {};
-	objectBufferData.modelToWorldMatrix = aModel->mesh.GetTransform();
+	objectBufferData.modelToWorldMatrix = aMesh->GetTransform();
 	myContext->Map(myObjectBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
 	memcpy(mappedBuffer.pData, &objectBufferData, sizeof(ObjectBufferData));
 	myContext->Unmap(myObjectBuffer.Get(), 0);
 	myContext->VSSetConstantBuffers(1, 1, myObjectBuffer.GetAddressOf());
-	aModel->mesh.Render(myContext.Get());
+	aMesh->Render(myContext.Get());
 }
 
-void GraphicsEngine::RenderNoDepth(Model* aModel)
+void GraphicsEngine::RenderNoDepth(Mesh* aMesh)
 {
 	myContext->OMSetRenderTargets(
 		1,
@@ -201,15 +197,15 @@ void GraphicsEngine::RenderNoDepth(Model* aModel)
 		nullptr
 	);
 	ObjectBufferData objectBufferData = {};
-	objectBufferData.modelToWorldMatrix = aModel->mesh.GetTransform();
+	objectBufferData.modelToWorldMatrix = aMesh->GetTransform();
 	myContext->Map(myObjectBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
 	memcpy(mappedBuffer.pData, &objectBufferData, sizeof(ObjectBufferData));
 	myContext->Unmap(myObjectBuffer.Get(), 0);
 	myContext->VSSetConstantBuffers(1, 1, myObjectBuffer.GetAddressOf());
-	aModel->mesh.Render(myContext.Get());
+	aMesh->Render(myContext.Get());
 }
 
-void GraphicsEngine::RenderBoids(Model* aModel, const UINT aBoidCount)
+void GraphicsEngine::RenderBoids(Mesh* aMesh, const UINT aBoidCount)
 {
 	myContext->OMSetRenderTargets(
 		1,
@@ -217,62 +213,12 @@ void GraphicsEngine::RenderBoids(Model* aModel, const UINT aBoidCount)
 		myDepthBuffer.Get()
 	);
 	myContext->VSSetConstantBuffers(0, 1, myFrameBuffer.GetAddressOf());
-	aModel->mesh.RenderInstanced(myContext.Get(), aBoidCount);
+	aMesh->RenderInstanced(myContext.Get(), aBoidCount);
 }
 
 void GraphicsEngine::EndFrame()
 {
 	mySwapChain->Present(1, 0);
-}
-
-bool GraphicsEngine::InitTexture(Texture& aOutTexture, const std::string& aTexturename, const bool aForceSRGB)
-{
-	int width, height, channels;
-	unsigned char* img = stbi_load(("../textures/" + aTexturename).c_str(), &width, &height, &channels, 0);
-	if (img == nullptr)
-		return false;
-	if (channels == 3)
-	{
-		std::vector<unsigned char> imageData(width * height * 4);
-		for (int i = 0; i < width * height; i++)
-		{
-			imageData[4 * i + 0] = img[3 * i + 0];
-			imageData[4 * i + 1] = img[3 * i + 1];
-			imageData[4 * i + 2] = img[3 * i + 2];
-			imageData[4 * i + 3] = 255;
-		}
-		if (!aOutTexture.Initialize(myDevice.Get(), imageData.data(), width, height, myContext.Get(), aForceSRGB))
-			return false;
-	}
-	else if (channels == 4)
-	{
-		if (!aOutTexture.Initialize(myDevice.Get(), img, width, height, myContext.Get(), aForceSRGB))
-			return false;
-	}
-
-	return false;
-}
-
-bool GraphicsEngine::SetEnvironmentTexture(const std::wstring aFileName, ComPtr<ID3D11ShaderResourceView>& aShaderResource)
-{
-	HRESULT result;
-
-	result = DirectX::CreateDDSTextureFromFileEx(
-		GetDevice(),
-		nullptr,
-		aFileName.c_str(),
-		0,
-		D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0,
-		false,
-		nullptr,
-		aShaderResource.GetAddressOf(),
-		nullptr);
-
-	if (FAILED(result))
-	{
-		return false;
-	}
-	return true;
 }
 
 ID3D11Device* GraphicsEngine::GetDevice()
@@ -284,24 +230,3 @@ ID3D11DeviceContext* GraphicsEngine::GetContext()
 {
 	return *myContext.GetAddressOf();
 }
-
-//myContext->PSSetShaderResources(0, 1, aModel->environmentTexture.GetAddressOf());
-			//for (int tI = 0; tI < (int)terrain.textures.size(); tI++)
-			//{
-			//	terrain.textures[tI].Bind(myContext.Get(), tI + 1);
-			//}
-			//for (int tI = 0; tI < (int)terrain.normalMaps.size(); tI++)
-			//{
-			//	terrain.normalMaps[tI].Bind(myContext.Get(), tI + 4);
-			//}
-			//for (int tI = 0; tI < (int)terrain.materials.size(); tI++)
-			//{
-			//	terrain.materials[tI].Bind(myContext.Get(), tI + 7);
-			//}
-			//ObjectBufferData objectBufferData = {};
-			//objectBufferData.modelToWorldMatrix = aModel->mesh.GetTransform();
-			//mappedBuffer = {};
-			//myContext->Map(myObjectBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
-			//memcpy(mappedBuffer.pData, &objectBufferData, sizeof(ObjectBufferData));
-			//myContext->Unmap(myObjectBuffer.Get(), 0);
-			//myContext->VSSetConstantBuffers(1, 1, myObjectBuffer.GetAddressOf());

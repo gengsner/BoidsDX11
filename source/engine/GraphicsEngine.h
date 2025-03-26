@@ -14,7 +14,7 @@ struct ID3D11RenderTargetView;
 struct ID3D11SamplerState;
 
 class Camera;
-struct Model;
+class Mesh;
 class Texture;
 
 struct RenderTarget
@@ -31,12 +31,10 @@ public:
 	bool Init(HWND windowHandle, const bool aFullscreenFlag);
 	FrameBufferData& GetFrameBufferData();
 	void PrepareFrame(const Vector3<float>& aClearColor);
-	void Render(Model* aModel);
-	void RenderNoDepth(Model* aModel);
-	void RenderBoids(Model* aModel, const UINT aBoidCount);
+	void Render(Mesh* aMesh);
+	void RenderNoDepth(Mesh* aMesh);
+	void RenderBoids(Mesh* aMesh, const UINT aBoidCount);
 	void EndFrame();
-	bool InitTexture(Texture& aOutTexture, const std::string& aTexturename, const bool aForceSRGB = true);
-	bool SetEnvironmentTexture(const std::wstring aFileName, ComPtr<ID3D11ShaderResourceView>& aShaderResource);
 	ID3D11Device* GetDevice();
 	ID3D11DeviceContext* GetContext();
 
