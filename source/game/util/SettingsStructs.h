@@ -55,7 +55,7 @@ struct GraphicsSettings
 	AmbientLight ambientLight;
 	Vector3<float> boidColor{ 0.1f,0.8f,0.1f };
 	Vector3<float> boidAltColor{ 0.1f,0.8f,0.1f };
-	int neighrborsToFullyColor = 100;
+	int flockSizeToFullyColor = 100;
 	Vector3<float> boundsColor{ 0.1f,0.1f,0.4f };
 	Vector3<float> clearColor{ 0.2f, 0.2f, 0.2f };
 	Vector3<float> playerColor{ 0.5f, 0.1f, 0.5f };

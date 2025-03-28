@@ -12,7 +12,7 @@ cbuffer FrameBuffer : register(b0)
     float ambientLightIntensity;
 
 	float3 boidColor;
-    int neiborsToFullyColor;
+    int flockSizeToFullyColor;
 
 	float3 boidAltColor;
     float maxSpeed;

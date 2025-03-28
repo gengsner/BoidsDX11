@@ -18,7 +18,7 @@ struct FrameBufferData
 	float ambientLightIntensity;
 
 	Vector3<float> boidColor;
-	int neiborsToFullyColor;
+	int flockSizeToFullyColor;
 
 	Vector3<float> boidAltColor;
 	float maxSpeed;

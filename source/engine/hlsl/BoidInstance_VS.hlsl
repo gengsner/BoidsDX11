@@ -34,9 +34,9 @@ PixelInputType main(VertexInputType input)
 
     float mainColor = 1.f;
     float altColor = 0.f;
-    if (neiborsToFullyColor > 0)
+    if (flockSizeToFullyColor > 0)
     {
-        altColor = min(1.f, ((float) b.neighbours / (float) neiborsToFullyColor));
+        altColor = min(1.f, ((float) b.flockSize / (float) flockSizeToFullyColor));
         mainColor = 1.f - altColor;                
     }
     output.color = float4(boidColor * mainColor + boidAltColor * altColor , 1.0);

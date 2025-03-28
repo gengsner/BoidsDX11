@@ -7,7 +7,7 @@ void BoidBehaviors(inout Boid boid)
     float3 center = 0;
     float3 close = 0;
     float3 avgVel = 0;
-    uint neighbours = 0;
+    uint flockSize = 0;
     
     for (uint i = 0; i < boidCount; i++)
     {
@@ -26,20 +26,20 @@ void BoidBehaviors(inout Boid boid)
             }
             center += other.pos;
             avgVel += other.vel;
-            neighbours++;
+            flockSize++;
         }
     }
     
-    if (neighbours > 0)
+    if (flockSize > 0)
     {
-        center /= neighbours;
-        avgVel /= neighbours;
+        center /= flockSize;
+        avgVel /= flockSize;
 
         boid.vel += (center - boid.pos) * cohesionFactor * deltaTime;
         boid.vel += (avgVel - boid.vel) * alignmentFactor * deltaTime;
     }
 
-    boid.neighbours = neighbours;
+    boid.flockSize = flockSize;
     boid.vel += close * separationFactor * deltaTime;
 }
 
@@ -48,7 +48,7 @@ void BoidBehaviorsGridded(inout Boid boid)
     float3 center = 0;
     float3 close = 0;
     float3 avgVel = 0;
-    uint neighbours = 0;
+    uint flockSize = 0;
     int cell = boid.cellIndex;
     
     int yStep = gridDims.x;
@@ -86,23 +86,23 @@ void BoidBehaviorsGridded(inout Boid boid)
                         }
                         center += other.pos;
                         avgVel += other.vel;
-                        neighbours++;
+                        flockSize++;
                     }
                 }
             }
         }
     }
    
-    if (neighbours > 0)
+    if (flockSize > 0)
     {
-        center /= neighbours;
-        avgVel /= neighbours;
+        center /= flockSize;
+        avgVel /= flockSize;
 
         boid.vel += (center - boid.pos) * cohesionFactor * deltaTime;
         boid.vel += (avgVel - boid.vel) * alignmentFactor * deltaTime;
     }
 
-    boid.neighbours = neighbours;
+    boid.flockSize = flockSize;
     boid.vel += close * separationFactor * deltaTime;
 }
 

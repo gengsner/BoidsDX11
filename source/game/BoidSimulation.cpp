@@ -186,7 +186,7 @@ const SimulationMessage BoidSimulation::UpdateSimulationSettings()
 	if (ImGui::CollapsingHeader("Graphics Settings"))
 	{
 		ImGui::Checkbox("Render Bounds", &myGraphicsSettings.renderBounds);
-		ImGui::DragInt("Neighbors to fully set Alt Color", &myGraphicsSettings.neighrborsToFullyColor, 0.1f, 0, 10000);
+		ImGui::DragInt("Flock Size to fully set Alt Color", &myGraphicsSettings.flockSizeToFullyColor, 0.1f, 0, 10000);
 		ImGui::DragFloat("View Distance", &myGraphicsSettings.viewDist, 0.1f, 0.f, 10000.f);
 		if (ImGui::TreeNode("Objects Color"))
 		{
@@ -319,7 +319,7 @@ void BoidSimulation::UpdateFrameBuffer()
 
 	frameBufferData.boidColor = myGraphicsSettings.boidColor;
 	frameBufferData.boidAltColor = myGraphicsSettings.boidAltColor;
-	frameBufferData.neiborsToFullyColor = myGraphicsSettings.neighrborsToFullyColor;
+	frameBufferData.flockSizeToFullyColor = myGraphicsSettings.flockSizeToFullyColor;
 	frameBufferData.boundsColor = myGraphicsSettings.boundsColor;
 	frameBufferData.playerColor = myGraphicsSettings.playerColor;
 

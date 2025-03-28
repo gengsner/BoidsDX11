@@ -174,7 +174,6 @@ void BoidComputer::RunBoidsGPU(const UINT aBoidCount)
 void BoidComputer::SwapBuffers()
 {
 	std::swap(uavBoidsIn, uavBoidsOut);
-
 }
 
 void BoidComputer::BindStructuredBuffer()

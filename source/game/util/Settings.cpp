@@ -66,7 +66,8 @@ void Settings::SaveBoidSimulationSettings(const SimulationSettings& aSimulationS
 		{"boundsColor",{ g.boundsColor.x, g.boundsColor.y, g.boundsColor.z }},
 		{"playerColor",{ g.playerColor.x, g.playerColor.y, g.playerColor.z }},
 		{"clearColor",{ g.clearColor.x, g.clearColor.y, g.clearColor.z }},
-		{"viewDist", g.viewDist }
+		{"viewDist", g.viewDist },
+		{"flockSizeToFullyColor", g.flockSizeToFullyColor}
 	};
 
 	{
@@ -131,4 +132,5 @@ void Settings::LoadBoidSimulationSettings(SimulationSettings& aOutSimulationSett
 	g.playerColor = { data["playerColor"][0], data["playerColor"][1], data["playerColor"][2] };
 	g.clearColor = { data["clearColor"][0], data["clearColor"][1], data["clearColor"][2] };
 	g.viewDist = data["viewDist"];
+	g.flockSizeToFullyColor = data["flockSizeToFullyColor"];
 }
