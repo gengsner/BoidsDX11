@@ -377,8 +377,7 @@ void BoidSimulation::UpdateFrameBuffer()
 		|| (!mySimSettings.griddingOn && mySimSettings.boidCount > MAX_BOIDS_PER_CELL)
 		);
 
-	if (invalidSettings)
-		myAutoHaltFlag = true;
+	myAutoHaltFlag = invalidSettings;
 
 	if (!myAutoHaltFlag)
 	{
