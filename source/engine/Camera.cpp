@@ -113,7 +113,7 @@ void Camera::MoveCamera(const CommonUtilities::Vector3<float>& aDelta, const flo
 
 void Camera::RotateCamera(const CommonUtilities::Vector2<float>& aDelta)
 {
-	myYaw += aDelta.y;
+	myYaw -= aDelta.y;
 	myPitch += aDelta.x;
 	myPitch = Clamp(myPitch, -89.f, 89.f);
 
@@ -127,8 +127,8 @@ void Camera::RotateCamera(const CommonUtilities::Vector2<float>& aDelta)
 	forward.Normalize();
 
 	Vector3<float> up{ 0.f, 1.f, 0.f };
-	Vector3<float> right = forward.Cross(up).GetNormalized();
-	up = right.Cross(forward);
+	Vector3<float> right = up.Cross(forward).GetNormalized();
+	up = forward.Cross(right);
 
 	myTransform.SetX(right);
 	myTransform.SetY(up);
