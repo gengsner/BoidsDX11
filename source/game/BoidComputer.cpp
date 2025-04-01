@@ -49,14 +49,14 @@ int BoidComputer::Init(GraphicsEngine& aGraphicsEngine)
 	if (FAILED(CreateComputeShader(L"../source/engine/hlsl/Grid_CS.hlsl", "clear", gEDevice, &clearCS)))
 		return 1;
 
-	CreateStructuredBuffer(gEDevice, sizeof(unsigned int), MAX_CELLS, nullptr, &countBuffer);
-	CreateBufferUAV(gEDevice, countBuffer, &uavCountBuffer);
+	CreateStructuredBuffer(gEDevice, sizeof(unsigned int), MAX_CELLS, nullptr, &sumBuffer);
+	CreateBufferUAV(gEDevice, sumBuffer, &uavSumBuffer);
 
-	CreateStructuredBuffer(gEDevice, sizeof(unsigned int), MAX_CELLS, nullptr, &tempCountBuffer);
-	CreateBufferUAV(gEDevice, tempCountBuffer, &uavTempCountBuffer);
+	CreateStructuredBuffer(gEDevice, sizeof(unsigned int), MAX_CELLS, nullptr, &unsortedSumBuffer);
+	CreateBufferUAV(gEDevice, unsortedSumBuffer, &uavUnsortedSumBuffer);
 
 	std::array<UINT, 2> iterInit = { 1, DOUBLE_THREAD_GROUP_SIZE };
-	CreateConstantBuffer(gEDevice, sizeof(unsigned int), 2, &iterInit, &groupSumIteration);
+	CreateConstantBuffer(gEDevice, sizeof(unsigned int), 2, &iterInit, &sortingStageBuffer);
 
 	CreateStructuredBuffer(gEDevice, sizeof(Boid), MAX_BOIDS, nullptr, &boidsIn);
 	CreateBufferUAV(gEDevice, boidsIn, &uavBoidsIn);
@@ -74,13 +74,13 @@ void BoidComputer::InitBoidTransforms()
 	RunComputeShader(initBoidCS, 0, 0, nullptr, 0, 2, aUAVViews,
 		(MAX_BOIDS + THREAD_GROUP_SIZE - 1) / THREAD_GROUP_SIZE, 1, 1);
 
-	gEContext->CSSetConstantBuffers(1, 1, &groupSumIteration);
+	gEContext->CSSetConstantBuffers(1, 1, &sortingStageBuffer);
 }
 
 
 void BoidComputer::RunBoidsGPUGridded(const UINT aBoidCount, const UINT aCellCount)
 {
-	ID3D11UnorderedAccessView* aUAVViews[4] = { uavBoidsIn, uavBoidsOut, uavCountBuffer, uavTempCountBuffer/*, uavGroupSumIterationBuffer*/ };
+	ID3D11UnorderedAccessView* aUAVViews[4] = { uavBoidsIn, uavBoidsOut, uavSumBuffer, uavUnsortedSumBuffer/*, uavGroupSumIterationBuffer*/ };
 
 	UINT threadGroupCell = (aCellCount + THREAD_GROUP_SIZE - 1) / THREAD_GROUP_SIZE;
 	threadGroupCell;
@@ -120,7 +120,7 @@ void BoidComputer::RunBoidsGPUGridded(const UINT aBoidCount, const UINT aCellCou
 				assert(dispatch == 1);	
 			}
 			std::array<UINT, 2> iterInit = { coverage, nextCoverage };
-			gEContext->UpdateSubresource(groupSumIteration, 0, nullptr, &iterInit, 0, 0);
+			gEContext->UpdateSubresource(sortingStageBuffer, 0, nullptr, &iterInit, 0, 0);
 		}
 	}
 	
@@ -134,7 +134,7 @@ void BoidComputer::RunBoidsGPUGridded(const UINT aBoidCount, const UINT aCellCou
 		UINT lastCoverage = coverage;
 		coverage /= DOUBLE_THREAD_GROUP_SIZE;
 		std::array<UINT, 2> iterInit = { coverage, lastCoverage };
-		gEContext->UpdateSubresource(groupSumIteration, 0, nullptr, &iterInit, 0, 0);
+		gEContext->UpdateSubresource(sortingStageBuffer, 0, nullptr, &iterInit, 0, 0);
 		groupsToHandle *= DOUBLE_THREAD_GROUP_SIZE;
 		dispatch = ((UINT)(groupsToHandle - 1.f) + DOUBLE_THREAD_GROUP_SIZE - 1) / DOUBLE_THREAD_GROUP_SIZE;
 		gEContext->Dispatch(dispatch, 1, 1);
@@ -166,7 +166,7 @@ void BoidComputer::RunBoidsGPUGridded(const UINT aBoidCount, const UINT aCellCou
 
 void BoidComputer::RunBoidsGPU(const UINT aBoidCount)
 {
-	ID3D11UnorderedAccessView* aUAVViews[3] = { uavBoidsIn, uavBoidsOut, uavCountBuffer };
+	ID3D11UnorderedAccessView* aUAVViews[3] = { uavBoidsIn, uavBoidsOut, uavSumBuffer };
 	RunComputeShader(runBoidCS, 0, 0, nullptr, 0, 3, aUAVViews,
 		(aBoidCount + THREAD_GROUP_SIZE - 1) / THREAD_GROUP_SIZE, 1, 1);
 }
@@ -248,15 +248,15 @@ void BoidComputer::UnInit()
 {
 	SAFE_RELEASE(boidsIn);
 	SAFE_RELEASE(boidsOut);
-	SAFE_RELEASE(countBuffer);
-	SAFE_RELEASE(tempCountBuffer);
-	SAFE_RELEASE(groupSumIteration);
+	SAFE_RELEASE(sumBuffer);
+	SAFE_RELEASE(unsortedSumBuffer);
+	SAFE_RELEASE(sortingStageBuffer);
 
 	SAFE_RELEASE(uavBoidsIn);
 	SAFE_RELEASE(uavBoidsOut);
 	SAFE_RELEASE(srvBoidsOut);
-	SAFE_RELEASE(uavCountBuffer);
-	SAFE_RELEASE(uavTempCountBuffer);
+	SAFE_RELEASE(uavSumBuffer);
+	SAFE_RELEASE(uavUnsortedSumBuffer);
 
 	SAFE_RELEASE(runBoidCS);
 	SAFE_RELEASE(runBoidGriddedCS);

@@ -15,8 +15,8 @@ struct Boid
 RWStructuredBuffer<Boid> boidsIn : register(u0);
 RWStructuredBuffer<Boid> boidsOut : register(u1);
 
-RWStructuredBuffer<uint> countBuffer : register(u2);
-RWStructuredBuffer<uint> countBufferTemp : register(u3);
+RWStructuredBuffer<uint> sumBuffer : register(u2);
+RWStructuredBuffer<uint> unsortedSumBuffer : register(u3);
 
 cbuffer sortingStageBuffer : register(b1)
 {

@@ -65,9 +65,9 @@ void BoidBehaviorsGridded(inout Boid boid)
                 uint start = 0;
                 if (curr > 0)
                 {
-                    start = countBuffer[curr - 1];
+                    start = sumBuffer[curr - 1];
                 }
-                uint end = countBuffer[curr];
+                uint end = sumBuffer[curr];
                                
                 for (uint i = start; i < end; i++)
                 {

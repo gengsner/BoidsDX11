@@ -14,7 +14,6 @@
 using namespace CommonUtilities;
 constexpr float IMGUI_SPACING = 200.f;
 constexpr float MAX_BOIDS_PER_CELL = 50000;
-constexpr float MAX_BOIDS_PER_CELL_GRIDDED = 5000;
 constexpr float MIN_FRAME_TIME = 10.f;
 
 BoidSimulation::~BoidSimulation()
@@ -175,14 +174,6 @@ const SimulationMessage BoidSimulation::UpdateSimulationSettings()
 		ImGui::DragFloat("Turn Speed", &mySimSettings.turnSpeed, 0.1f, 0.1f, 100.f);
 		ImGui::DragFloat("Turn Margin", &mySimSettings.turnMagin, 0.1f, 0.f, 100.f);
 	}
-	if (ImGui::CollapsingHeader("Player Settings"))
-	{
-		ImGui::DragFloat("Boid Attraction", &myPlayerSettings.boidAttraction, 0.1f, -1000.f, 1000.f);
-		ImGui::DragFloat("Max Velocity", &myPlayerSettings.maxVelocity, 0.1f, 0.f, 1000.f);
-		ImGui::DragFloat("Acceleration", &myPlayerSettings.acceleration, 0.1f, 0.f, 1000.f);
-		ImGui::DragFloat("Roll Acceleration", &myPlayerSettings.rollAcceleration, 0.001f, 0.f, 0.5f);
-		ImGui::DragFloat("Mouse Acceleration", &myPlayerSettings.mouseAcceleration, 0.001f, 0.f, 0.3f);
-	}
 	if (ImGui::CollapsingHeader("Graphics Settings"))
 	{
 		ImGui::Checkbox("Render Bounds", &myGraphicsSettings.renderBounds);
@@ -231,6 +222,14 @@ const SimulationMessage BoidSimulation::UpdateSimulationSettings()
 			ImGui::TreePop();
 		}
 	}
+	if (ImGui::CollapsingHeader("Player Settings"))
+	{
+		ImGui::DragFloat("Boid Attraction", &myPlayerSettings.boidAttraction, 0.1f, -1000.f, 1000.f);
+		ImGui::DragFloat("Max Velocity", &myPlayerSettings.maxVelocity, 0.1f, 0.f, 1000.f);
+		ImGui::DragFloat("Acceleration", &myPlayerSettings.acceleration, 0.1f, 0.f, 1000.f);
+		ImGui::DragFloat("Roll Acceleration", &myPlayerSettings.rollAcceleration, 0.001f, 0.f, 0.5f);
+		ImGui::DragFloat("Mouse Sensitivity", &myPlayerSettings.mouseAcceleration, 0.001f, 0.f, 0.3f);
+	}
 	ImGui::Text("");
 	return returnMsg;
 }
@@ -242,7 +241,7 @@ void BoidSimulation::ShowPlayerControls()
 	ImVec4 color(0.5f, 0.5f, 1, 1);
 	ImGui::Text("Hide UI and start moving"); ImGui::SameLine(IMGUI_SPACING);
 	ImGui::TextColored(color, "[ESC]");
-	ImGui::Text("Accelerate, deccelerate"); ImGui::SameLine(IMGUI_SPACING);
+	ImGui::Text("Adjust Speed"); ImGui::SameLine(IMGUI_SPACING);
 	ImGui::TextColored(color, "[W], [S]");
 	ImGui::Text("Roll"); ImGui::SameLine(IMGUI_SPACING);
 	ImGui::TextColored(color, "[A], [D]");
@@ -373,7 +372,7 @@ void BoidSimulation::UpdateFrameBuffer()
 		|| myCellCount == 0
 		|| myCellCount > MAX_CELLS
 		|| mySimSettings.boidCount > MAX_BOIDS
-		|| (mySimSettings.griddingOn && mySimSettings.boidCount / myCellCount > MAX_BOIDS_PER_CELL_GRIDDED)
+		|| (mySimSettings.griddingOn && mySimSettings.boidCount / myCellCount > MAX_BOIDS_PER_CELL)
 		|| (!mySimSettings.griddingOn && mySimSettings.boidCount > MAX_BOIDS_PER_CELL)
 		);
 

@@ -27,8 +27,8 @@ void clear(uint3 threadID : SV_DispatchThreadID)
 {
     uint index = threadID.x;
     
-    countBuffer[index] = 0;
-    countBufferTemp[index] = 0;
+    sumBuffer[index] = 0;
+    unsortedSumBuffer[index] = 0;
 }
 
 [numthreads(groupSize, 1, 1)]
@@ -44,18 +44,18 @@ void count(uint3 threadID : SV_DispatchThreadID)
     uint cellIndex = getCellIndex(b);
     boidsOut[threadID.x].cellIndex = cellIndex;
     
-    InterlockedAdd(countBuffer[cellIndex], 1);
+    InterlockedAdd(sumBuffer[cellIndex], 1);
 }
 
 [numthreads(1, 1, 1)]
 void sum(uint3 threadID : SV_DispatchThreadID)
 {
-   countBufferTemp[0] = countBuffer[0];
+   unsortedSumBuffer[0] = sumBuffer[0];
     
     for (uint i = 1; i < cellCount; i++)
     {
-        countBuffer[i] += countBuffer[i - 1];
-        countBufferTemp[i] = countBuffer[i];
+        sumBuffer[i] += sumBuffer[i - 1];
+        unsortedSumBuffer[i] = sumBuffer[i];
     }
 }
 
@@ -78,7 +78,7 @@ void sweepPrefixSum(uint3 groupThreadID : SV_GroupThreadID, uint3 groupID : SV_G
     
     if (ai < cellCount)
     {
-        temp[aiGroup] = countBuffer[ai];
+        temp[aiGroup] = sumBuffer[ai];
     }
     else
     {
@@ -87,7 +87,7 @@ void sweepPrefixSum(uint3 groupThreadID : SV_GroupThreadID, uint3 groupID : SV_G
     
     if (bi < cellCount)
     {
-        temp[biGroup] = countBuffer[bi];
+        temp[biGroup] = sumBuffer[bi];
     }
     else
     {
@@ -121,9 +121,9 @@ void sweepPrefixSum(uint3 groupThreadID : SV_GroupThreadID, uint3 groupID : SV_G
     GroupMemoryBarrierWithGroupSync();
     
     if (ai < cellCount)
-        countBuffer[ai] = temp[aiGroup];
+        sumBuffer[ai] = temp[aiGroup];
     if (bi < cellCount)
-        countBuffer[bi] = temp[biGroup];
+        sumBuffer[bi] = temp[biGroup];
 }
 
 [numthreads(doubleGroupSize - 1, 1, 1)]
@@ -138,7 +138,7 @@ void groupBlockSum(uint3 groupThreadID : SV_GroupThreadID, uint3 groupID : SV_Gr
                
     if (index < cellCount)
     {
-        countBuffer[index] += countBuffer[groupStartIndex];
+        sumBuffer[index] += sumBuffer[groupStartIndex];
     }    
 }
 
@@ -151,7 +151,7 @@ void blockSum(uint3 threadID : SV_DispatchThreadID)
         uint a = i + threadX;
         if (a < cellCount)
         {
-            countBuffer[a] += countBuffer[i - 1];
+            sumBuffer[a] += sumBuffer[i - 1];
         }
         DeviceMemoryBarrierWithGroupSync();       
     }
@@ -160,7 +160,7 @@ void blockSum(uint3 threadID : SV_DispatchThreadID)
 [numthreads(groupSize, 1, 1)]
 void copy(uint3 threadID : SV_DispatchThreadID)
 {
-    countBufferTemp[threadID.x] = countBuffer[threadID.x];
+    unsortedSumBuffer[threadID.x] = sumBuffer[threadID.x];
 }
 
 [numthreads(groupSize, 1, 1)]
@@ -173,7 +173,7 @@ void sort(uint3 threadID : SV_DispatchThreadID)
     
     Boid b = boidsOut[threadID.x];
     int offset = 0;
-    InterlockedAdd(countBufferTemp[b.cellIndex], -1, offset);
+    InterlockedAdd(unsortedSumBuffer[b.cellIndex], -1, offset);
       
     boidsIn[offset - 1] = b;
 }

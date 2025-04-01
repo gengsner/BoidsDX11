@@ -50,11 +50,11 @@ private:
 	ID3D11ComputeShader* runBoidCS = nullptr;
 	ID3D11ComputeShader* runBoidGriddedCS = nullptr;
 
-	ID3D11Buffer* countBuffer = nullptr;
-	ID3D11Buffer* tempCountBuffer = nullptr;
-	ID3D11Buffer* groupSumIteration = nullptr;
-	ID3D11UnorderedAccessView* uavCountBuffer = nullptr;
-	ID3D11UnorderedAccessView* uavTempCountBuffer = nullptr;
+	ID3D11Buffer* sumBuffer = nullptr;
+	ID3D11Buffer* unsortedSumBuffer = nullptr;
+	ID3D11Buffer* sortingStageBuffer = nullptr;
+	ID3D11UnorderedAccessView* uavSumBuffer = nullptr;
+	ID3D11UnorderedAccessView* uavUnsortedSumBuffer = nullptr;
 
 	ID3D11Buffer* boidsIn = nullptr;
 	ID3D11UnorderedAccessView* uavBoidsIn = nullptr;
