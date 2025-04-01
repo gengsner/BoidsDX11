@@ -25,12 +25,12 @@ bool Cube::Initialize(ID3D11Device* device, const Matrix4x4<float>& aTransform)
 	Vector3<float> p6({ -size, -size, -size });
 	Vector3<float> p7({ -size, -size, size });
 
-	Vector3<float> normalRight	{-1,0,0};
-	Vector3<float> normalLeft	{1,0,0};
-	Vector3<float> normalTop	{0,-1,0};
-	Vector3<float> normalBottom	{0,1,0};
-	Vector3<float> normalFront	{0,0,-1};
-	Vector3<float> normalBack	{0,0,1};
+	Vector3<float> normalRight	{1,0,0};
+	Vector3<float> normalLeft	{-1,0,0};
+	Vector3<float> normalTop	{0,1,0};
+	Vector3<float> normalBottom	{0,-1,0};
+	Vector3<float> normalFront	{0,0,1};
+	Vector3<float> normalBack	{0,0,-1};
 
 	myVertexCount = 36;
 

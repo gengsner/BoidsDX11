@@ -273,8 +273,12 @@ void BoidSimulation::UpdatePlayer(InputHandler& aInputHandler)
 
 	roll += input.x * myDeltaTime * myPlayerSettings.rollAcceleration;
 	float m = myPlayerSettings.mouseAcceleration * 0.001f;
-	pitch += (float)delta.y * m;
-	yaw += (float)delta.x * m;
+	
+	if (myDeltaTime != 0)
+	{
+		pitch += (float)delta.y * m;
+		yaw += (float)delta.x * m;
+	}
 
 	Quaternion<float> q(yaw, pitch, roll);
 
@@ -347,7 +351,7 @@ void BoidSimulation::UpdateFrameBuffer()
 
 	frameBufferData.playerAttraction = myPlayerSettings.boidAttraction;
 	frameBufferData.playerPosition = myPlayer.transform.GetTranslation();
-	frameBufferData.playerFuturePosition = myPlayer.transform.GetTranslation() + myPlayer.transform.GetZ() * max(0.1f, myPlayer.velocity);
+	frameBufferData.playerFuturePosition = myPlayer.transform.GetTranslation() + myPlayer.transform.GetZ() * min(mySimSettings.visualRange * 4.f, myPlayer.velocity * 0.2f);
 
 	auto cubeSize = mySimSettings.maxPos - mySimSettings.minPos;
 

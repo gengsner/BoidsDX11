@@ -8,6 +8,7 @@
 #include "GraphicsEngine.h"
 #include "hlsl/ComputeShaderDefines.h"
 #include <unordered_map>
+#include <stack>
 
 using namespace CommonUtilities;
 
@@ -84,7 +85,6 @@ void BoidComputer::RunBoidsGPUGridded(const UINT aBoidCount, const UINT aCellCou
 
 	UINT threadGroupCell = (aCellCount + THREAD_GROUP_SIZE - 1) / THREAD_GROUP_SIZE;
 	threadGroupCell;
-	UINT halfThreadGroupCell = (aCellCount + DOUBLE_THREAD_GROUP_SIZE - 1) / DOUBLE_THREAD_GROUP_SIZE;
 	UINT threadGroupBoid = (aBoidCount + THREAD_GROUP_SIZE - 1) / THREAD_GROUP_SIZE;
 	UINT clearAllDispatch = (MAX_CELLS + DOUBLE_THREAD_GROUP_SIZE - 1) / DOUBLE_THREAD_GROUP_SIZE;
 
@@ -97,39 +97,35 @@ void BoidComputer::RunBoidsGPUGridded(const UINT aBoidCount, const UINT aCellCou
 	gEContext->Dispatch(threadGroupBoid, 1, 1);
 
 #define PARALLEL_SUM
-#ifdef PARALLEL_SUM	
+#ifdef PARALLEL_SUM
 #define PARALLEL_BLOCK
 #ifdef PARALLEL_BLOCK
+
+	UINT halfThreadGroupCell = (aCellCount + DOUBLE_THREAD_GROUP_SIZE - 1) / DOUBLE_THREAD_GROUP_SIZE;
 	UINT coverage = 1;
 	UINT dispatch = halfThreadGroupCell;
 	float groupsToHandle = (float)aCellCount;
-	bool multipleDispatches = DOUBLE_THREAD_GROUP_SIZE < (aCellCount / 2);
 
 	gEContext->CSSetShader(sweepCS, nullptr, 0);
-	while (coverage < (aCellCount / 2))
+	while (coverage < aCellCount)
 	{
 		gEContext->Dispatch(dispatch, 1, 1);
 		coverage *= DOUBLE_THREAD_GROUP_SIZE;
-
-		if (coverage < (aCellCount / 2))
+		if (coverage < aCellCount)
 		{
 			groupsToHandle = groupsToHandle / (float)DOUBLE_THREAD_GROUP_SIZE;
 			dispatch = ((UINT)groupsToHandle + DOUBLE_THREAD_GROUP_SIZE - 1) / DOUBLE_THREAD_GROUP_SIZE;
-			UINT nextCoverage = coverage * coverage;
-			if (nextCoverage == 0)
-			{
-				assert(dispatch == 1);	
-			}
-			std::array<UINT, 2> iterInit = { coverage, nextCoverage };
+			std::array<UINT, 2> iterInit = { coverage, coverage * coverage };
 			gEContext->UpdateSubresource(sortingStageBuffer, 0, nullptr, &iterInit, 0, 0);
 		}
 	}
 	
-	gEContext->CSSetShader(groupBlockSumCS, nullptr, 0);
-	if (multipleDispatches)
-	{
+	//Check to see if multiple dispatches were made
+	if (DOUBLE_THREAD_GROUP_SIZE < aCellCount)
 		coverage /= DOUBLE_THREAD_GROUP_SIZE;
-	}
+		
+	gEContext->CSSetShader(groupBlockSumCS, nullptr, 0);
+	
 	while (coverage > 1)
 	{
 		UINT lastCoverage = coverage;
@@ -141,6 +137,7 @@ void BoidComputer::RunBoidsGPUGridded(const UINT aBoidCount, const UINT aCellCou
 		gEContext->Dispatch(dispatch, 1, 1);
 	}
 #else
+	UINT halfThreadGroupCell = (aCellCount + DOUBLE_THREAD_GROUP_SIZE - 1) / DOUBLE_THREAD_GROUP_SIZE;
 	gEContext->CSSetShader(sweepCS, nullptr, 0);
 	gEContext->Dispatch(halfThreadGroupCell, 1, 1);
 	gEContext->CSSetShader(blockSumCS, nullptr, 0);

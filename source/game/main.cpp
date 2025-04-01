@@ -84,6 +84,8 @@ int APIENTRY wWinMain(
 		ImGui::Begin("Settings (ESC to hide)");
 		ImGui::DragFloat("TimeScale", &timeScale, 0.05f, 0, 10.f);
 		timer.Update();
+		if (inputHandler.GetKeyDown('P'))
+			timeScale = 0;
 		float scaledDeltaTime = timer.GetDeltaTime() * timeScale;
 
 		if (renderImgui)

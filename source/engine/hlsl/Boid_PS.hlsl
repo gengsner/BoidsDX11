@@ -5,7 +5,7 @@ PixelOutput main(PixelInputType input)
 {
     PixelOutput result;    
     
-    float dLIntensity = max(0, dot(-lightDir, input.worldNormal.xyz)) * dirLightIntensity;
+    float dLIntensity = max(0, dot(lightDir, input.worldNormal.xyz)) * dirLightIntensity;
     
     float3 dLColor = dirLightColor * dLIntensity;
     float3 aColor =  ambientLightColor * ambientLightIntensity;
