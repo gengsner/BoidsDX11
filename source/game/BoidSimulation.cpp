@@ -63,6 +63,7 @@ bool BoidSimulation::InitBoidComputer()
 void BoidSimulation::ResetSimulation()
 {
 	myBoidComputer.InitBoidTransforms();
+
 	myFPSHaltFlag = false;
 	myAutoHaltFlag = false;
 
@@ -169,8 +170,8 @@ const SimulationMessage BoidSimulation::UpdateSimulationSettings()
 	{
 		ImGui::Checkbox("Grid On", &mySimSettings.griddingOn);
 		ImGui::DragFloat("Cell Size Mult", &mySimSettings.cellSizeMult, 0.1f, 1.f, 100.f);
-		ImGui::DragFloat3("Min Pos", &mySimSettings.minPos.x, 0.1f, -1000.f, 0.f);
-		ImGui::DragFloat3("Max Pos", &mySimSettings.maxPos.x, 0.1f, 0.f, 1000.f);
+		ImGui::DragFloat3("Min Pos", &mySimSettings.minPos.x, 0.1f, -10000.f, 0.f);
+		ImGui::DragFloat3("Max Pos", &mySimSettings.maxPos.x, 0.1f, 0.f, 10000.f);
 		ImGui::DragFloat("Turn Speed", &mySimSettings.turnSpeed, 0.1f, 0.1f, 100.f);
 		ImGui::DragFloat("Turn Margin", &mySimSettings.turnMagin, 0.1f, 0.f, 100.f);
 	}

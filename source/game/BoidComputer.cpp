@@ -80,17 +80,18 @@ void BoidComputer::InitBoidTransforms()
 
 void BoidComputer::RunBoidsGPUGridded(const UINT aBoidCount, const UINT aCellCount)
 {
-	ID3D11UnorderedAccessView* aUAVViews[4] = { uavBoidsIn, uavBoidsOut, uavSumBuffer, uavUnsortedSumBuffer/*, uavGroupSumIterationBuffer*/ };
+	ID3D11UnorderedAccessView* aUAVViews[4] = { uavBoidsIn, uavBoidsOut, uavSumBuffer, uavUnsortedSumBuffer };
 
 	UINT threadGroupCell = (aCellCount + THREAD_GROUP_SIZE - 1) / THREAD_GROUP_SIZE;
 	threadGroupCell;
 	UINT halfThreadGroupCell = (aCellCount + DOUBLE_THREAD_GROUP_SIZE - 1) / DOUBLE_THREAD_GROUP_SIZE;
 	UINT threadGroupBoid = (aBoidCount + THREAD_GROUP_SIZE - 1) / THREAD_GROUP_SIZE;
+	UINT clearAllDispatch = (MAX_CELLS + DOUBLE_THREAD_GROUP_SIZE - 1) / DOUBLE_THREAD_GROUP_SIZE;
 
 	gEContext->CSSetUnorderedAccessViews(0, 4, aUAVViews, nullptr);
 
 	gEContext->CSSetShader(clearCS, nullptr, 0);
-	gEContext->Dispatch(halfThreadGroupCell, 1, 1);
+	gEContext->Dispatch(clearAllDispatch, 1, 1);
 
 	gEContext->CSSetShader(countCS, nullptr, 0);
 	gEContext->Dispatch(threadGroupBoid, 1, 1);
@@ -144,7 +145,7 @@ void BoidComputer::RunBoidsGPUGridded(const UINT aBoidCount, const UINT aCellCou
 	gEContext->Dispatch(halfThreadGroupCell, 1, 1);
 	gEContext->CSSetShader(blockSumCS, nullptr, 0);
 	gEContext->Dispatch(1, 1, 1);
-#endif
+#endif //PARALLEL_BLOCK
 #else
 	gEContext->CSSetShader(sumCS, nullptr, 0);
 	gEContext->Dispatch(1, 1, 1);
