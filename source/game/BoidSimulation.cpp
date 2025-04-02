@@ -278,11 +278,10 @@ void BoidSimulation::UpdatePlayer(InputHandler& aInputHandler)
 	{
 		pitch += (float)delta.y * m;
 		yaw += (float)delta.x * m;
+		Quaternion<float> q(yaw, pitch, roll);
+		myPlayer.quaternion *= q;
 	}
 
-	Quaternion<float> q(yaw, pitch, roll);
-
-	myPlayer.quaternion *= q;
 	myPlayer.transform.SetRotation(myPlayer.quaternion.GetRotationMatrix4x4());
 
 	myPlayer.velocity += input.y * myPlayerSettings.acceleration * myDeltaTime;
@@ -351,7 +350,7 @@ void BoidSimulation::UpdateFrameBuffer()
 
 	frameBufferData.playerAttraction = myPlayerSettings.boidAttraction;
 	frameBufferData.playerPosition = myPlayer.transform.GetTranslation();
-	frameBufferData.playerFuturePosition = myPlayer.transform.GetTranslation() + myPlayer.transform.GetZ() * min(mySimSettings.visualRange * 4.f, myPlayer.velocity * 0.2f);
+	frameBufferData.playerFuturePosition = myPlayer.transform.GetTranslation() + myPlayer.transform.GetZ() * myPlayer.velocity * 0.8f;
 
 	auto cubeSize = mySimSettings.maxPos - mySimSettings.minPos;
 
