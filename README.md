@@ -107,6 +107,6 @@ The size of cells will be Visual Range * Cell Size Mult.
 | Acceleration      |
 | Roll Acceleration |
 | Mouse Sensitivity |
-| Boid Attracion<br/>*(Controls how other boids iteract with the Player. Negative values will have boids avoiding.)*|
+| Boid Attraction<br/>*(Controls how other boids iteract with the Player. Negative values will have boids avoiding.)*|
 
 
